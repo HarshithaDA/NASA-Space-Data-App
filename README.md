@@ -2,10 +2,10 @@
 
 A Flask web application for exploring NASA space data through two public APIs:
 
-- **Near Earth Object Feed:** search asteroid close approaches and identify potentially hazardous asteroids.
-- **DONKI:** search space weather events such as coronal mass ejections, geomagnetic storms, solar flares, and more.
+- **Near Earth Object Feed:** Find asteroids making close approaches to Earth and identify potentially hazardous asteroids.
+- **DONKI:** Search NASA's Space Weather Database Of Notifications, Knowledge, Information (DONKI) for major space weather activity.
 
-The project also includes Docker, Jenkins, and Kubernetes/Minikube deployment configuration.
+**The project also includes Docker, Jenkins, and Kubernetes/Minikube deployment configuration.**
 
 ## Features
 
@@ -182,7 +182,3 @@ NASA's DONKI service can be temporarily unavailable. The app retries transient `
 ### Jenkins cannot find the pipeline
 
 The file must be named exactly `Jenkinsfile`, not `Jenkinsfile.txt`, and it must exist in the branch configured in Jenkins.
-
-## License
-
-This project is provided for educational and demonstration purposes.
