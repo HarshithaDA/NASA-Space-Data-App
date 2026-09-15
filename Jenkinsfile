@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build') {
+            steps {
+                echo 'Application source code checked out successfully.'
+                echo 'Python dependencies will be installed inside the Docker image.'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                bat 'docker build -t space-app:3.0 .'
+            }
+        }
+    }
+}
