@@ -1,4 +1,4 @@
-# NASA Space Data App
+# NASA Space Data Application
 
 A Flask web application for exploring NASA space data through two public APIs:
 
