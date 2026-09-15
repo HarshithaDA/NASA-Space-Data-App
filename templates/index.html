@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NASA Space Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="shell">
+        <header class="page-header">
+            <p class="eyebrow">NASA SPACE DATA</p>
+            <h1>Explore near-Earth space.</h1>
+            <p class="lede">Track asteroid approaches and understand space weather events through NASA's public APIs.</p>
+        </header>
+
+        <nav class="tabs" aria-label="Data source tabs">
+            <button class="tab {% if active_tab == 'neo' %}active{% endif %}" data-tab="neo" type="button">☄️ Near Earth Objects</button>
+            <button class="tab {% if active_tab == 'donki' %}active{% endif %}" data-tab="donki" type="button">☀️ DONKI Space Weather</button>
+        </nav>
+
+        {% if error_message %}<div class="alert error" role="alert">{{ error_message }}</div>{% endif %}
+
+        <section class="panel tab-panel {% if active_tab != 'neo' %}hidden{% endif %}" data-panel="neo">
+            <div class="panel-heading">
+                <p class="eyebrow">NEAR EARTH OBJECTS</p>
+                <h2>NASA Near Earth Object Feed</h2>
+                <p>Find asteroids making their closest approach to Earth between two dates.</p>
+            </div>
+            <form method="post" class="search-form">
+                <input type="hidden" name="search_type" value="neo">
+                <input type="hidden" name="active_tab" value="neo">
+                <div class="field-grid">
+                    <label>Start date<input type="date" name="neo_start_date" value="{{ form_values.neo_start_date }}" required></label>
+                    <label>End date<input type="date" name="neo_end_date" value="{{ form_values.neo_end_date }}" required></label>
+                </div>
+                <button class="primary-button" type="submit"><span class="button-label">Search asteroids</span><span class="button-loading" aria-hidden="true">◌ Loading...</span></button>
+            </form>
+            {% if asteroids is not none %}
+            <div class="result-heading"><h3>{{ asteroids|length }} asteroid(s) found</h3></div>
+            <div class="result-list">
+                {% for asteroid in asteroids %}
+                {% set approach = asteroid.close_approach_data[0] %}
+                <details class="result-card">
+                    <summary>{% if asteroid.is_potentially_hazardous_asteroid %}<span class="hazard">⚠️</span>{% endif %}{{ asteroid.name }}</summary>
+                    <div class="detail-content">
+                        <div class="facts">
+                            <p><strong>Closest approach</strong>{{ approach.close_approach_date_full }}</p>
+                            <p><strong>Miss distance</strong>{{ approach.miss_distance.kilometers }} km</p>
+                            <p><strong>Estimated diameter</strong>{{ "%.2f"|format(asteroid.estimated_diameter.kilometers.estimated_diameter_min) }} - {{ "%.2f"|format(asteroid.estimated_diameter.kilometers.estimated_diameter_max) }} km</p>
+                            <p><strong>Potentially hazardous</strong>{{ "Yes" if asteroid.is_potentially_hazardous_asteroid else "No" }}</p>
+                        </div>
+                        <a class="text-link" href="{{ asteroid.nasa_jpl_url }}" target="_blank" rel="noopener">Open NASA details ↗</a>
+                    </div>
+                </details>
+                {% else %}<p class="empty">No asteroids were found for this date range.</p>{% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="panel tab-panel {% if active_tab != 'donki' %}hidden{% endif %}" data-panel="donki">
+            <div class="panel-heading">
+                <p class="eyebrow">SPACE WEATHER</p>
+                <h2>DONKI Space Weather Database</h2>
+                <p>Search NASA's Space Weather Database Of Notifications, Knowledge, Information (DONKI) for major space weather activity.</p>
+            </div>
+            <form method="post" class="search-form">
+                <input type="hidden" name="search_type" value="donki">
+                <input type="hidden" name="active_tab" value="donki">
+                <div class="field-grid donki-fields">
+                    <label>Event type<select name="donki_event_type">{% for label in event_types %}<option value="{{ label }}" {% if form_values.donki_event_type == label %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+                    <label>Start date<input type="date" name="donki_start_date" value="{{ form_values.donki_start_date }}" required></label>
+                    <label>End date<input type="date" name="donki_end_date" value="{{ form_values.donki_end_date }}" required></label>
+                </div>
+                <button class="primary-button" type="submit"><span class="button-label">Search DONKI</span><span class="button-loading" aria-hidden="true">◌ Loading...</span></button>
+            </form>
+            {% if donki_events is not none %}
+            <div class="result-heading"><h3>{{ donki_events|length }} event(s) found</h3></div>
+            <div class="result-list">
+                {% for event in donki_events %}
+                <details class="result-card">
+                    <summary>{{ event.id }} <span class="summary-time">{{ event.time }}</span></summary>
+                    <div class="detail-content">
+                        <div class="facts two-column">{% for field in event.summary_fields %}<p><strong>{{ field.label }}</strong>{{ field.value }}</p>{% endfor %}</div>
+                        {% if event.note %}<div class="note"><strong>What happened</strong><p>{{ event.note }}</p></div>{% endif %}
+                        {% if event.extra_fields %}<h4>Additional details</h4><div class="facts two-column">{% for field in event.extra_fields %}<p><strong>{{ field.label }}</strong>{{ field.value }}</p>{% endfor %}</div>{% endif %}
+                        {% if event.cme_analysis %}<h4>Best available CME analysis</h4><div class="facts two-column">{% if event.cme_analysis.speed %}<p><strong>Speed</strong>{{ event.cme_analysis.speed }}</p>{% endif %}{% if event.cme_analysis.direction %}<p><strong>Direction</strong>{{ event.cme_analysis.direction }}</p>{% endif %}{% if event.cme_analysis.width %}<p><strong>Width</strong>{{ event.cme_analysis.width }}</p>{% endif %}{% if event.cme_analysis.arrival %}<p><strong>Estimated arrival</strong>{{ event.cme_analysis.arrival }}</p>{% endif %}</div>{% endif %}
+                        {% for impact in event.impacts %}<div class="impact"><strong>Predicted impact</strong>{{ impact.location }}{% if impact.arrival %}; expected arrival {{ impact.arrival }}{% endif %}{% if impact.glancing_blow %}; glancing blow{% endif %}</div>{% endfor %}
+                        <div class="actions">{% if event.link %}<a class="text-link" href="{{ event.link }}" target="_blank" rel="noopener">Open full NASA DONKI record ↗</a>{% endif %}<details class="technical"><summary>Technical details</summary><pre>{{ event.raw|tojson(indent=2) }}</pre></details></div>
+                    </div>
+                </details>
+                {% else %}<p class="empty">No DONKI events were found for this date range.</p>{% endfor %}
+            </div>
+            {% endif %}
+        </section>
+    </main>
+    <script>
+        const tabs = document.querySelectorAll('.tab');
+        const panels = document.querySelectorAll('.tab-panel');
+        tabs.forEach((tab) => tab.addEventListener('click', () => {
+            const selected = tab.dataset.tab;
+            tabs.forEach((item) => item.classList.toggle('active', item === tab));
+            panels.forEach((panel) => panel.classList.toggle('hidden', panel.dataset.panel !== selected));
+        }));
+        document.querySelectorAll('.search-form').forEach((form) => form.addEventListener('submit', () => {
+            const button = form.querySelector('.primary-button');
+            button.disabled = true;
+            button.classList.add('is-loading');
+        }));
+    </script>
+</body>
+</html>
