@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: space-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: space-app
+
+  template:
+    metadata:
+      labels:
+        app: space-app
+
+    spec:
+      containers:
+        - name: space-app
+          image: space-app:3.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 5000
