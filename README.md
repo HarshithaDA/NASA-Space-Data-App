@@ -67,7 +67,8 @@ The user selects a date range and, for DONKI, an event category. Flask validates
 - Transient DONKI service-error retries
 - Docker container support on port `5000`
 - Kubernetes deployment with two replicas and a NodePort service
-- Jenkins pipeline for building the Docker image
+- Jenkins pipeline for building the Docker image - 3 stages (Checkout, build, docker build)
+- GitFlow - main, develop, feature/* branches exist; with commit history
 
 ## Output Screenshots
 <img width="957" height="957" alt="image" src="https://github.com/user-attachments/assets/4597082b-36c3-4501-9a27-56e0b5a10d74" />
@@ -135,6 +136,7 @@ docker rm space-app
 ## Jenkins
 
 The repository contains a `Jenkinsfile` for a Windows Jenkins agent. It builds the Docker image with the tag `space-app:3.0`.
+Jenkins Pipeline includes 3 stages (Checkout, build, docker build)
 
 Configure the Jenkins pipeline with:
 
