@@ -34,6 +34,16 @@ git switch -c feature/describe-your-change
 
 Open pull requests from `feature/*` into `staging`. After integration testing passes, open a pull request from `staging` into `main`. Avoid direct commits to `main` and `staging`.
 
+Verify the local and remote branch setup:
+
+```powershell
+git fetch --prune origin
+git branch -a
+git log --oneline --decorate --all -12
+```
+
+The branch list should include `main`, `staging`, and any active `feature/*` branches. The commit log shows which changes have been merged between branches; branch names and history can change as work progresses.
+
 ## Architecture
 
 ```mermaid
