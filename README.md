@@ -7,6 +7,49 @@ A Flask web application for exploring NASA space data through two public APIs:
 
 **The project also includes Docker, Jenkins, and Kubernetes/Minikube deployment configuration.**
 
+## Architecture
+
+```mermaid
+flowchart LR
+	User[User browser]
+
+	subgraph Runtime[Application runtime]
+		Flask[Flask app\nport 5000]
+		UI[HTML and CSS UI\nNEO and DONKI tabs]
+	end
+
+	subgraph NASA[NASA APIs]
+		NEO[NASA Near Earth Object Feed]
+		DONKI[NASA DONKI API]
+	end
+
+	User -->|HTTP| UI
+	UI --> Flask
+	Flask -->|NASA_API_KEY| NEO
+	Flask -->|NASA_API_KEY| DONKI
+	NEO --> Flask
+	DONKI --> Flask
+	Flask --> UI
+
+	subgraph Delivery[Build and deployment]
+		GitHub[GitHub repository]
+		Jenkins[Jenkins pipeline]
+		Docker[Docker image\nspace-app:3.0]
+		Minikube[Minikube cluster]
+		Deployment[Kubernetes Deployment\n2 replicas]
+		Service[NodePort Service\n5000 to 30080]
+	end
+
+	GitHub --> Jenkins
+	Jenkins -->|docker build| Docker
+	Docker -->|image load| Minikube
+	Minikube --> Deployment
+	Deployment --> Service
+	Service --> Flask
+```
+
+The browser communicates with the Flask application on port `5000`. Flask requests data from NASA's NEO and DONKI APIs using the `NASA_API_KEY` environment variable. For Kubernetes deployments, Minikube runs two Flask replicas behind the `space-app-service` NodePort service. Jenkins builds the Docker image from the `main` branch.
+
 ## Features
 
 - Separate Near Earth Objects and DONKI tabs
