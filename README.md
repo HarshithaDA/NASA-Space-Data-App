@@ -71,6 +71,9 @@ The user selects a date range and, for DONKI, an event category. Flask validates
 
 ## Output Screenshots
 <img width="912" height="893" alt="image" src="https://github.com/user-attachments/assets/c6d1dcb0-be09-40a9-8cc3-dee648acefe7" />
+<img width="698" height="866" alt="image" src="https://github.com/user-attachments/assets/b986f968-074a-49dd-885f-aa0063e6050a" />
+<img width="595" height="902" alt="image" src="https://github.com/user-attachments/assets/1a2e023a-d05c-4f40-8149-4aeaea054d29" />
+
 
 ## Requirements
 
