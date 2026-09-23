@@ -14,8 +14,11 @@ flowchart LR
 	User[User browser]
 
 	subgraph Runtime[Application runtime]
-		Flask[Flask app\nport 5000]
 		UI[HTML and CSS UI\nNEO and DONKI tabs]
+		Input[User input\ndates and event type]
+		Flask[Flask app\nvalidate and process]
+		Results[Readable results\nsummary cards and hazard icons]
+		Technical[Technical details\nfull JSON on demand]
 	end
 
 	subgraph NASA[NASA APIs]
@@ -23,13 +26,17 @@ flowchart LR
 		DONKI[NASA DONKI API]
 	end
 
-	User -->|HTTP| UI
-	UI --> Flask
+	User -->|opens app| UI
+	UI -->|submits form| Input
+	Input -->|HTTP POST| Flask
 	Flask -->|NASA_API_KEY| NEO
 	Flask -->|NASA_API_KEY| DONKI
-	NEO --> Flask
-	DONKI --> Flask
-	Flask --> UI
+	NEO -->|asteroid data| Flask
+	DONKI -->|space weather data| Flask
+	Flask -->|formatted response| Results
+	Results -->|rendered page| UI
+	Results -.->|expand if needed| Technical
+	Technical -.->|raw API payload| UI
 
 	subgraph Delivery[Build and deployment]
 		GitHub[GitHub repository]
@@ -48,7 +55,7 @@ flowchart LR
 	Service --> Flask
 ```
 
-The browser communicates with the Flask application on port `5000`. Flask requests data from NASA's NEO and DONKI APIs using the `NASA_API_KEY` environment variable. For Kubernetes deployments, Minikube runs two Flask replicas behind the `space-app-service` NodePort service. Jenkins builds the Docker image from the `main` branch.
+The user selects a date range and, for DONKI, an event category. Flask validates that input, calls the selected NASA API with `NASA_API_KEY`, and formats the response into readable result cards. NEO results include hazardous-asteroid indicators, while DONKI results include important event facts with the complete JSON payload available under technical details. For Kubernetes deployments, Minikube runs two Flask replicas behind the `space-app-service` NodePort service. Jenkins builds the Docker image from the `main` branch.
 
 ## Features
 
