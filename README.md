@@ -7,6 +7,33 @@ A Flask web application for exploring NASA space data through two public APIs:
 
 **The project also includes Docker, Jenkins, and Kubernetes/Minikube deployment configuration.**
 
+## GitFlow Branching Strategy
+
+This repository uses the following branches:
+
+- `main`: production-ready code and the branch used by the Jenkins release pipeline.
+- `staging`: integration branch for testing changes before they reach `main`.
+- `feature/*`: short-lived branches for individual features, fixes, or infrastructure changes.
+
+Create the shared `staging` branch from `main` once:
+
+```powershell
+git switch main
+git pull origin main
+git switch -c staging
+git push -u origin staging
+```
+
+Create feature branches from `staging`:
+
+```powershell
+git switch staging
+git pull origin staging
+git switch -c feature/describe-your-change
+```
+
+Open pull requests from `feature/*` into `staging`. After integration testing passes, open a pull request from `staging` into `main`. Avoid direct commits to `main` and `staging`.
+
 ## Architecture
 
 ```mermaid
@@ -133,6 +160,8 @@ docker stop space-app
 docker rm space-app
 ```
 
+The Dockerfile uses a multi-stage build. Dependencies are installed into a builder virtual environment, and only that environment is copied into the smaller runtime image.
+
 ## Jenkins
 
 The repository contains a `Jenkinsfile` for a Windows Jenkins agent. It builds the Docker image with the tag `space-app:3.0`.
@@ -145,6 +174,14 @@ Configure the Jenkins pipeline with:
 - Script path: `Jenkinsfile`
 
 The Jenkins agent must have Docker available, and the pipeline uses the Windows `bat` step.
+
+The pipeline runs Trivy after the image is built:
+
+```text
+trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed space-app:3.0
+```
+
+Install Trivy on the Jenkins agent and make sure `trivy` is available on `PATH`. The build fails when `HIGH` or `CRITICAL` vulnerabilities are found.
 
 ## Kubernetes with Minikube
 
@@ -240,3 +277,13 @@ NASA's DONKI service can be temporarily unavailable. The app retries transient `
 ### Jenkins cannot find the pipeline
 
 The file must be named exactly `Jenkinsfile`, not `Jenkinsfile.txt`, and it must exist in the branch configured in Jenkins.
+
+### Jenkins cannot run the Trivy stage
+
+Install Trivy on the Jenkins machine and verify it from PowerShell:
+
+```powershell
+trivy --version
+```
+
+If Trivy is not on `PATH`, configure the Jenkins tool environment or use the full path to `trivy.exe` in the Jenkinsfile.

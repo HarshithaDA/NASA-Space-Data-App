@@ -21,5 +21,11 @@ pipeline {
                 bat 'docker build -t space-app:3.0 .'
             }
         }
+
+        stage('Security Scan') {
+            steps {
+                bat 'trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed space-app:3.0'
+            }
+        }
     }
 }
